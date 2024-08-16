@@ -19,7 +19,7 @@ class App {
             response.send('Application is running');
         });
         controllers.forEach((controller) => {
-            this.app.use('/', controller.router);
+            this.app.use('/api', controller.router);
         });
     }
     listen() {
@@ -29,3 +29,4 @@ class App {
     }
 }
 exports.default = App;
+//# sourceMappingURL=app.js.map

@@ -1,10 +1,12 @@
+import { injectable } from 'inversify';
 import { BaseModel } from '../../models/BaseModel';
 import { FieldUpdate } from '../../models/mutation/FieldUpdate';
 import { PagingResponse } from '../../models/pagination/paging-response';
 import { IBaseRepository } from '../interfaces/IBaseRepository';
 
+@injectable()
 export class BaseRepository<T extends BaseModel> implements IBaseRepository<T> {
-  private baseModels: BaseModel[] = [
+  private baseModels = [
     {
       id: 1,
       createdBy: 'me',
@@ -20,7 +22,7 @@ export class BaseRepository<T extends BaseModel> implements IBaseRepository<T> {
       createdBy: 'me',
       createdDate: new Date(),
     },
-  ];
+  ] as T[];
   constructor() {}
 
   public getAll() {
@@ -28,12 +30,16 @@ export class BaseRepository<T extends BaseModel> implements IBaseRepository<T> {
     return res;
   }
   public getById(id: string) {
-    const res = this.getAll().find((model) => model.id);
+    const res = this.getAll().find((model) => model.id === parseInt(id));
     return res ?? null;
   }
-  public getPaging: () => PagingResponse<T>;
+  public getPaging(){
+    return {
 
-  public insertOne(model: T): T {
+    } as PagingResponse<T>;
+  }
+
+  public insertOne(model: T): T | null{
     if (model) {
       this.baseModels.push(model);
       return model;
@@ -54,6 +60,10 @@ export class BaseRepository<T extends BaseModel> implements IBaseRepository<T> {
       return null;
     }
   }
-  public updateFields: (fieldUpdates: FieldUpdate[]) => boolean;
-  public updateField: (fieldUpdate: FieldUpdate) => boolean;
+  public updateFields(fieldUpdates: FieldUpdate[]){
+    return true;
+  };
+  public updateField(fieldUpdate: FieldUpdate){
+    return true;
+  };
 }

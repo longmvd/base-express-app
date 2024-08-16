@@ -1,15 +1,18 @@
+import { inject, injectable } from 'inversify';
 import { BaseModel } from '../../models/BaseModel';
 import { FieldUpdate } from '../../models/mutation/FieldUpdate';
 import { PagingResponse } from '../../models/pagination/paging-response';
 import { BaseRepository } from '../../repositories/implements/BaseRepository';
 import { IBaseRepository } from '../../repositories/interfaces/IBaseRepository';
 import { IBaseBL } from '../interfaces/IBaseBL';
+import { TYPES } from '@/inversify/types';
 
+@injectable()
 export class BaseBL<T extends BaseModel> implements IBaseBL<T> {
   protected repository: IBaseRepository;
 
-  constructor(repository: IBaseRepository) {
-    this.repository = repository ?? new BaseRepository();
+  constructor(@inject(TYPES.IBaseRepository)repository: IBaseRepository) {
+    this.repository = repository;
   }
 
   public getAll() {
