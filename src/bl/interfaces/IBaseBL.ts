@@ -1,20 +1,21 @@
+import { NextFunction } from 'express';
 import { BaseModel } from '../../models/BaseModel';
 import { FieldUpdate } from '../../models/mutation/FieldUpdate';
 import { PagingResponse } from '../../models/pagination/paging-response';
 
 export interface IBaseBL<T = BaseModel> {
   //#region get
-  getAll: () => T[];
-  getById: (id: string) => T;
-  getPaging: () => PagingResponse<T>;
+  getAll: () => Promise<T[]>;
+  getById: (id: string) => Promise<T | null>;
+  getPaging: () => Promise<PagingResponse<T>>;
   //#endregion
 
   //#region post
-  insertOne(model: T): T;
+  insertOne(model: T, next?: NextFunction): Promise<T | null>;
   //#endregion
 
   //#region put
-  updateOne(model: T): T;
+  updateOne(model: T): Promise<T | null>;
   //#endregion
 
   //#region patch

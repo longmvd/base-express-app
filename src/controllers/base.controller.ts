@@ -1,23 +1,17 @@
-import { inject, injectable } from "inversify";
-import { BaseBL } from "../bl/implements/BaseBL";
-import { IBaseBL } from "../bl/interfaces/IBaseBL";
-import { BaseModel } from "../models/BaseModel";
-import { Router } from "express";
-import { TYPES } from "@/inversify/types";
-import { Request, Response } from "express";
+import { TYPES } from '@/inversify/types';
+import { ServiceResponseError } from '@/models/service-reponse/service-response';
+import { NextFunction, Request, Response, Router } from 'express';
+import { inject, injectable } from 'inversify';
+import { IBaseBL } from '../bl/interfaces/IBaseBL';
 
 @injectable()
 export class BaseController {
   protected bl: IBaseBL;
   public router: Router;
   protected controllerName: string = '';
-  constructor(
-    @inject(TYPES.IBaseBL) bl: IBaseBL
-  ) {
+  constructor(@inject(TYPES.IBaseBL) bl: IBaseBL) {
     this.bl = bl;
     this.router = Router();
-    console.log(this.router);
-    console.log(bl);
     this.initControllerName();
     this.initializeDefaultRoutes();
   }
@@ -36,10 +30,10 @@ export class BaseController {
     this.router.get(`/${this.controllerName}/:id`, this.getById.bind(this));
     this.router.post(`/${this.controllerName}`, this.insert.bind(this));
   }
-  
+
   //#region GET
-  get(request: Request, response: Response) {
-    const res = this.bl.getAll();
+  async get(request: Request, response: Response) {
+    const res = await this.bl.getAll();
     response.json(res);
   }
 
@@ -48,8 +42,14 @@ export class BaseController {
     response.json(res);
   }
   //#endregion
-  insert(request: Request, response: Response) {
-    const res = this.bl.insertOne(request.body);
-    response.json(res);
+  async insert(request: Request, response: Response, next: NextFunction) {
+    try {
+      const res = await this.bl.insertOne(request.body, next);
+      if (res) {
+        response.json(res);
+      }
+    } catch (e: any) {
+      next(new ServiceResponseError(400, e.message, e));
+    }
   }
 }
