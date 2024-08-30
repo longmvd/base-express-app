@@ -9,7 +9,7 @@ export class BaseModel {
       Object.assign(this, model);
     }
   }
-  id: string | number;
+  id: string | number | undefined;
   createdBy?: string;
   createdDate?: Date;
 

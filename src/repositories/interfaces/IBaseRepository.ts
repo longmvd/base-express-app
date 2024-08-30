@@ -2,9 +2,14 @@ import { PrismaQuery } from '@/models/prisma-query';
 import { BaseModel } from '../../models/BaseModel';
 import { FieldUpdate } from '../../models/mutation/FieldUpdate';
 import { PagingResponse } from '../../models/pagination/paging-response';
+import { PrismaClient } from '@prisma/client';
 
 export interface IBaseRepository<T = BaseModel> {
   setTypeName(typeName: string): void;
+
+  getDbInstance(): PrismaClient | any;
+
+
   //#region get
   getAll: (conditions?: PrismaQuery<T>) => Promise<T[]>;
   getById: (
@@ -19,19 +24,19 @@ export interface IBaseRepository<T = BaseModel> {
   //#endregion
 
   //#region put
-  updateOne(model: T): Promise<T | null>;
+  updateOneById(model: T): Promise<T | null>;
   //#endregion
 
   //#region patch
-  updateFields: (fieldUpdates: FieldUpdate[]) => boolean;
-  updateField: (fieldUpdate: FieldUpdate) => boolean;
+  updateFields: (fieldUpdates: FieldUpdate[]) => Promise<T []>;
+  updateField: (fieldUpdate: FieldUpdate) => Promise<T | null>;
 
   //#endregion
 
   //#region delete
-  deleteOne: (id: string) => boolean;
+  deleteOneById: (id: string) => Promise<boolean>;
 
-  deleteMany: (ids: string[]) => boolean;
+  deleteManyById: (ids: string[]) => Promise<boolean>;
 
   //#endregion
 }

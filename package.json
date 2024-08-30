@@ -11,7 +11,7 @@
     "debug": "node -r ts-node/register ./src/index.ts"
   },
   "dependencies": {
-    "@prisma/client": "^5.18.0",
+    "@prisma/client": "^5.19.0",
     "@types/express": "^4.17.21",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",

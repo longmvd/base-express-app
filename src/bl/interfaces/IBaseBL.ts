@@ -6,7 +6,7 @@ import { PagingResponse } from '../../models/pagination/paging-response';
 export interface IBaseBL<T = BaseModel> {
   //#region get
   getAll: () => Promise<T[]>;
-  getById: (id: string) => Promise<T | null>;
+  getById: (id: string, next?: NextFunction) => Promise<T | null>;
   getPaging: () => Promise<PagingResponse<T>>;
   //#endregion
 
@@ -15,16 +15,19 @@ export interface IBaseBL<T = BaseModel> {
   //#endregion
 
   //#region put
-  updateOne(model: T): Promise<T | null>;
+  updateOneById(model: T, next?: NextFunction): Promise<T | null>;
   //#endregion
 
   //#region patch
-  updateFields: (fieldUpdates: FieldUpdate[]) => boolean;
-  updateField: (fieldUpdate: FieldUpdate) => boolean;
+  updateFields: (fieldUpdates: FieldUpdate[]) => Promise<T[] | null>;
+  updateField: (fieldUpdate: FieldUpdate) => Promise<T | null>;
 
   //#endregion
 
   //#region delete
+  deleteOneById: (id: string) => Promise<boolean>;
+
+  deleteManyById: (ids: string[]) => Promise<boolean>;
 
   //#endregion
 }

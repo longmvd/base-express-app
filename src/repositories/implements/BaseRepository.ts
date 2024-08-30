@@ -5,6 +5,7 @@ import { BaseModel } from '../../models/BaseModel';
 import { FieldUpdate } from '../../models/mutation/FieldUpdate';
 import { PagingResponse } from '../../models/pagination/paging-response';
 import { IBaseRepository } from '../interfaces/IBaseRepository';
+import { User } from '@/models/User';
 
 @injectable()
 export class BaseRepository<T extends BaseModel = any>
@@ -12,23 +13,7 @@ export class BaseRepository<T extends BaseModel = any>
 {
   private db: PrismaClient;
   private typeName: string;
-  private baseModels = [
-    {
-      id: 1,
-      createdBy: 'me',
-      createdDate: new Date(),
-    },
-    {
-      id: 2,
-      createdBy: 'me',
-      createdDate: new Date(),
-    },
-    {
-      id: 3,
-      createdBy: 'me',
-      createdDate: new Date(),
-    },
-  ] as T[];
+  
   constructor() {
     this.db = new PrismaClient();
     this.typeName = this.constructor.name;
@@ -36,6 +21,10 @@ export class BaseRepository<T extends BaseModel = any>
 
   setTypeName(typeName: string) {
     this.typeName = typeName;
+  }
+
+  getDbInstance(): PrismaClient | any {
+    return this.db;
   }
 
   //#region GET Methods
@@ -74,33 +63,81 @@ export class BaseRepository<T extends BaseModel = any>
 
   //#region UPDATE Methods
 
-  public async updateOne(model: T) {
+  public async updateOneById(model: T) {
     if (model.id) {
-      const modelUpdate = await this.getById(model.id.toString());
-      if (modelUpdate) {
-        for (let key in modelUpdate) {
-          modelUpdate[key] = model[key];
-        }
-      }
+      const id = model.id;
+      const numberId = Number(id);
+      model.id = undefined;
+      const modelUpdate = ((await this.db) as any)?.[this.typeName]?.update({
+        where: {
+          id: isNaN(numberId) ? id.toString() : numberId,
+        },
+        data: model,
+      })
+      
       return modelUpdate;
     } else {
       return null;
     }
   }
-  public updateFields(fieldUpdates: FieldUpdate[]) {
-    return true;
+  public async updateFields(fieldUpdates: FieldUpdate[]) {
+    const promises = [];
+    for(const fieldUpdate of fieldUpdates){
+      const data = fieldUpdate.fieldsAndValues;
+      const select: any = {};
+      const where: any = {};
+      where[fieldUpdate.keyName] = fieldUpdate.keyValue;
+      for(const field in data){
+        if(data[field]){
+          select[field] = true;
+        }
+      }
+      const promise = (this.db as any)?.[this.typeName]?.update({
+        where:where,
+        select:select,
+        data: data,
+      })
+      if(promise){
+        promises.push(promise);
+      }
+    }
+    
+    const result = await Promise.all(promises) as any
+    return result;
   }
-  public updateField(fieldUpdate: FieldUpdate) {
-    return true;
+  public async updateField(fieldUpdate: FieldUpdate) {
+    const res = await this.updateFields([fieldUpdate]);
+    return res[0];
   }
   //#endregion
 
   //#region DELETE Methods
-  public deleteOne(id: string) {
-    return true;
+  public async deleteOneById(id: string) {
+    // const res = ((await this.db) as any)?.[this.typeName]?.delete()
+    const numberId = Number(id);
+    const res = await this.db.user.delete({
+      where: {
+        id: isNaN(numberId) ? id?.toString() as any : numberId,
+      }
+    })
+    if(res){
+      return true;
+    }
+    return false;
   }
-  public deleteMany(ids: string[]) {
-    return true;
+
+  public async deleteManyById(ids: string[]) {
+    const res = await this.db.user.deleteMany({
+      where: {
+        id: {
+          in: ids as any,
+        }
+      }
+    })
+    if(res){
+      return true;
+    }
+    return false;
   }
 
   //#endregion
